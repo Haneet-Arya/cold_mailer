@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Email Preview - Cold Mailer{% endblock %}
+
+{% block header %}
+<header class="bg-white shadow">
+    <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <h1 class="text-3xl font-bold tracking-tight text-gray-900">Email Preview</h1>
+    </div>
+</header>
+{% endblock %}
+
+{% block content %}
+<div class="px-4 sm:px-0">
+    <div class="max-w-3xl mx-auto">
+        <!-- Preview Box -->
+        <div class="bg-white shadow rounded-lg overflow-hidden">
+            <div class="px-4 py-5 border-b border-gray-200 bg-yellow-50 sm:px-6">
+                <div class="flex items-center">
+                    <svg class="h-5 w-5 text-yellow-400 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+                    </svg>
+                    <h3 class="text-lg font-medium leading-6 text-yellow-800">Dry Run Preview</h3>
+                </div>
+                <p class="mt-1 text-sm text-yellow-700">This is a preview. No email has been sent.</p>
+            </div>
+            <div class="px-4 py-5 sm:p-6">
+                <pre class="whitespace-pre-wrap text-sm text-gray-900 font-mono bg-gray-50 p-4 rounded-md">{{ preview }}</pre>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="mt-6 flex gap-4 justify-end">
+            <a href="/email/send?recruiter_id={{ recruiter.id }}" class="rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+                Back to Form
+            </a>
+            <form method="POST" action="/email/send" class="inline">
+                <input type="hidden" name="recruiter_id" value="{{ recruiter.id }}">
+                <input type="hidden" name="template_name" value="{{ template_name }}">
+                <button type="submit" class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500">
+                    Send This Email
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}{{ recruiter.get_full_name() }} - Cold Mailer{% endblock %}
+
+{% block header %}
+<header class="bg-white shadow">
+    <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 flex justify-between items-center">
+        <div>
+            <nav class="flex" aria-label="Breadcrumb">
+                <ol class="flex items-center space-x-2">
+                    <li><a href="/recruiters" class="text-gray-500 hover:text-gray-700">Recruiters</a></li>
+                    <li><span class="text-gray-400">/</span></li>
+                    <li class="text-gray-900 font-medium">{{ recruiter.get_full_name() }}</li>
+                </ol>
+            </nav>
+            <h1 class="mt-2 text-3xl font-bold tracking-tight text-gray-900">{{ recruiter.get_full_name() }}</h1>
+        </div>
+        <div class="flex gap-2">
+            <a href="/email/send?recruiter_id={{ recruiter.id }}" class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500">
+                Send Email
+            </a>
+            <a href="/recruiters/{{ recruiter.id }}/edit" class="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+                Edit
+            </a>
+        </div>
+    </div>
+</header>
+{% endblock %}
+
+{% block content %}
+<div class="px-4 sm:px-0">
+    <div class="overflow-hidden bg-white shadow sm:rounded-lg">
+        <div class="px-4 py-5 sm:px-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-medium leading-6 text-gray-900">Recruiter Details</h3>
+                    <p class="mt-1 max-w-2xl text-sm text-gray-500">Personal and contact information.</p>
+                </div>
+                <span class="status-badge status-{{ recruiter.status }}">{{ recruiter.status }}</span>
+            </div>
+        </div>
+        <div class="border-t border-gray-200">
+            <dl>
+                <div class="bg-gray-50 px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt class="text-sm font-medium text-gray-500">ID</dt>
+                    <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">{{ recruiter.id }}</dd>
+                </div>
+                <div class="bg-white px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt class="text-sm font-medium text-gray-500">Full Name</dt>
+                    <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                        {% if recruiter.title %}{{ recruiter.title }} {% endif %}{{ recruiter.get_full_name() }}
+                    </dd>
+                </div>
+                <div class="bg-gray-50 px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt class="text-sm font-medium text-gray-500">Email</dt>
+                    <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                        <a href="mailto:{{ recruiter.email }}" class="text-indigo-600 hover:text-indigo-900">{{ recruiter.email }}</a>
+                    </dd>
+                </div>
+                <div class="bg-white px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt class="text-sm font-medium text-gray-500">Company</dt>
+                    <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">{{ recruiter.company }}</dd>
+                </div>
+                {% if recruiter.job_title %}
+                <div class="bg-gray-50 px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt class="text-sm font-medium text-gray-500">Job Title (Applying For)</dt>
+                    <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">{{ recruiter.job_title }}</dd>
+                </div>
+                {% endif %}
+                {% if recruiter.department %}
+                <div class="bg-white px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt class="text-sm font-medium text-gray-500">Department</dt>
+                    <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">{{ recruiter.department }}</dd>
+                </div>
+                {% endif %}
+                <div class="bg-gray-50 px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt class="text-sm font-medium text-gray-500">Greeting Style</dt>
+                    <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">{{ recruiter.greeting_style }}</dd>
+                </div>
+                {% if recruiter.last_contacted %}
+                <div class="bg-white px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt class="text-sm font-medium text-gray-500">Last Contacted</dt>
+                    <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">{{ recruiter.last_contacted.strftime('%Y-%m-%d %H:%M') }}</dd>
+                </div>
+                {% endif %}
+                {% if recruiter.custom_fields %}
+                <div class="bg-gray-50 px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt class="text-sm font-medium text-gray-500">Custom Fields</dt>
+                    <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                        <div class="space-y-1">
+                            {% for key, value in recruiter.custom_fields.items() %}
+                            <div class="flex">
+                                <span class="font-medium">{{ key }}:</span>
+                                <span class="ml-2">{{ value }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </dd>
+                </div>
+                {% endif %}
+            </dl>
+        </div>
+    </div>
+
+    <!-- Quick Status Update -->
+    <div class="mt-6 bg-white shadow sm:rounded-lg p-4">
+        <h3 class="text-sm font-medium text-gray-900 mb-3">Quick Status Update</h3>
+        <div class="flex flex-wrap gap-2">
+            {% for status in ['pending', 'sent', 'replied', 'bounced'] %}
+            <form hx-post="/recruiters/{{ recruiter.id }}/status" hx-swap="none" style="display: inline;">
+                <input type="hidden" name="status" value="{{ status }}">
+                <button type="submit"
+                    class="{% if recruiter.status == status %}opacity-50 cursor-not-allowed{% endif %} rounded-md px-3 py-1.5 text-sm font-medium text-{{ 'yellow' if status == 'pending' else 'blue' if status == 'sent' else 'green' if status == 'replied' else 'red' }}-700 bg-{{ 'yellow' if status == 'pending' else 'blue' if status == 'sent' else 'green' if status == 'replied' else 'red' }}-100 hover:bg-{{ 'yellow' if status == 'pending' else 'blue' if status == 'sent' else 'green' if status == 'replied' else 'red' }}-200"
+                    {% if recruiter.status == status %}disabled{% endif %}>
+                    Mark as {{ status }}
+                </button>
+            </form>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

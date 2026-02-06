@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Send Email - Cold Mailer{% endblock %}
+
+{% block header %}
+<header class="bg-white shadow">
+    <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <h1 class="text-3xl font-bold tracking-tight text-gray-900">Send Email</h1>
+    </div>
+</header>
+{% endblock %}
+
+{% block content %}
+<div class="px-4 sm:px-0">
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <!-- Send Form -->
+        <div class="lg:col-span-2">
+            <form method="POST" action="/email/send" class="bg-white shadow rounded-lg p-6 space-y-6">
+                <!-- Recruiter Selection -->
+                <div>
+                    <label for="recruiter_id" class="block text-sm font-medium text-gray-700">Select Recruiter <span class="text-red-500">*</span></label>
+                    <select name="recruiter_id" id="recruiter_id" required
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        <option value="">-- Select a recruiter --</option>
+                        {% for recruiter in recruiters %}
+                        <option value="{{ recruiter.id }}" {% if selected_recruiter and selected_recruiter.id == recruiter.id %}selected{% endif %}>
+                            {{ recruiter.get_full_name() }} ({{ recruiter.email }}) - {{ recruiter.company }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Template Selection -->
+                <div>
+                    <label for="template_name" class="block text-sm font-medium text-gray-700">Email Template <span class="text-red-500">*</span></label>
+                    <select name="template_name" id="template_name" required
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        {% for template in templates %}
+                        <option value="{{ template }}" {% if request.query_params.get('template') == template %}selected{% endif %}>{{ template }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Dry Run Checkbox -->
+                <div class="flex items-center">
+                    <input type="checkbox" name="dry_run" id="dry_run" value="true"
+                        class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                    <label for="dry_run" class="ml-2 block text-sm text-gray-700">
+                        Dry run (preview only, don't send)
+                    </label>
+                </div>
+
+                <!-- Submit Buttons -->
+                <div class="flex gap-3 pt-4 border-t">
+                    <button type="submit" name="dry_run" value="true" formnovalidate
+                        class="rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+                        Preview Email
+                    </button>
+                    <button type="submit"
+                        class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500">
+                        Send Email
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Info Panel -->
+        <div class="space-y-6">
+            <!-- Quick Stats -->
+            <div class="bg-white shadow rounded-lg p-4">
+                <h3 class="text-sm font-medium text-gray-900 mb-3">Quick Info</h3>
+                <dl class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <dt class="text-gray-500">Total Recruiters</dt>
+                        <dd class="font-medium text-gray-900">{{ recruiters|length }}</dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-gray-500">Templates Available</dt>
+                        <dd class="font-medium text-gray-900">{{ templates|length }}</dd>
+                    </div>
+                </dl>
+            </div>
+
+            <!-- Bulk Send CTA -->
+            <div class="bg-indigo-50 shadow rounded-lg p-4">
+                <h3 class="text-sm font-medium text-indigo-900 mb-2">Need to send to multiple recruiters?</h3>
+                <p class="text-sm text-indigo-700 mb-3">Use bulk send to email all pending recruiters at once.</p>
+                <a href="/email/bulk" class="block w-full rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500">
+                    Go to Bulk Send
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

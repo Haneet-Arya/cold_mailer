@@ -1,0 +1,62 @@
+# Cold Mailer Configuration
+
+# SMTP Settings
+smtp:
+  host: smtp.gmail.com
+  port: 587
+  use_tls: true
+  timeout: 30
+
+# Rate Limiting
+rate_limit:
+  emails_per_hour: 20
+  delay_between_emails: 30  # seconds
+  max_emails_per_day: 100
+
+# Data Format: "csv" or "json"
+# Set to "auto" for auto-detection based on existing files
+data_format: auto
+
+# File Paths (relative to project root)
+paths:
+  templates: templates
+  data: data
+  attachments: attachments
+  logs: logs
+
+# Sender Information
+sender:
+  name: "Your Name"
+  signature: |
+    Best regards,
+    Your Name
+    your.email@gmail.com
+    LinkedIn: linkedin.com/in/yourprofile
+
+# Email Settings
+email:
+  subject_prefix: ""  # Optional prefix for all subjects
+  default_template: default
+  attach_resume: true
+  resume_filename: resume.pdf
+
+# Greeting Styles
+greeting_styles:
+  formal:
+    with_title: "Dear {title} {last_name},"
+    without_title: "Dear {first_name} {last_name},"
+  semi_formal:
+    with_title: "Dear {title} {last_name},"
+    without_title: "Dear {first_name},"
+  casual:
+    with_title: "Hi {first_name},"
+    without_title: "Hi {first_name},"
+  professional:
+    with_title: "Hello {title} {last_name},"
+    without_title: "Hello {first_name},"
+
+# Logging
+logging:
+  level: INFO
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: cold_mailer.log

@@ -1,0 +1,6 @@
+<!-- HTMX polling fallback for progress status -->
+<div class="text-sm">
+    <p>Progress: {{ session.current }} / {{ session.total }}</p>
+    <p>Status: {{ session.status }}</p>
+    <p>Sent: {{ session.sent }} | Failed: {{ session.failed }} | Skipped: {{ session.skipped }}</p>
+</div>

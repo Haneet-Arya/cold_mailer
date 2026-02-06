@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-gray-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Cold Mailer{% endblock %}</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+
+    <!-- Alpine.js -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <style>
+        [x-cloak] { display: none !important; }
+
+        .status-badge {
+            @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+        }
+        .status-pending { @apply bg-yellow-100 text-yellow-800; }
+        .status-sent { @apply bg-blue-100 text-blue-800; }
+        .status-replied { @apply bg-green-100 text-green-800; }
+        .status-bounced { @apply bg-red-100 text-red-800; }
+
+        .htmx-request .htmx-indicator { display: inline-block; }
+        .htmx-indicator { display: none; }
+
+        /* Loading spinner */
+        .spinner {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #3498db;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="h-full" x-data="{ sidebarOpen: false }">
+    <div class="min-h-full">
+        <!-- Navigation -->
+        <nav class="bg-indigo-600">
+            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div class="flex h-16 items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <a href="/" class="text-white font-bold text-xl">Cold Mailer</a>
+                        </div>
+                        <div class="hidden md:block">
+                            <div class="ml-10 flex items-baseline space-x-4">
+                                <a href="/" class="{% if request.url.path == '/' %}bg-indigo-700 text-white{% else %}text-indigo-200 hover:bg-indigo-500 hover:text-white{% endif %} rounded-md px-3 py-2 text-sm font-medium">Dashboard</a>
+                                <a href="/recruiters" class="{% if '/recruiters' in request.url.path %}bg-indigo-700 text-white{% else %}text-indigo-200 hover:bg-indigo-500 hover:text-white{% endif %} rounded-md px-3 py-2 text-sm font-medium">Recruiters</a>
+                                <a href="/templates" class="{% if '/templates' in request.url.path %}bg-indigo-700 text-white{% else %}text-indigo-200 hover:bg-indigo-500 hover:text-white{% endif %} rounded-md px-3 py-2 text-sm font-medium">Templates</a>
+                                <a href="/email/send" class="{% if '/email' in request.url.path %}bg-indigo-700 text-white{% else %}text-indigo-200 hover:bg-indigo-500 hover:text-white{% endif %} rounded-md px-3 py-2 text-sm font-medium">Send Email</a>
+                                <a href="/settings" class="{% if '/settings' in request.url.path %}bg-indigo-700 text-white{% else %}text-indigo-200 hover:bg-indigo-500 hover:text-white{% endif %} rounded-md px-3 py-2 text-sm font-medium">Settings</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mobile menu button -->
+                    <div class="md:hidden">
+                        <button @click="sidebarOpen = !sidebarOpen" type="button" class="inline-flex items-center justify-center rounded-md bg-indigo-700 p-2 text-indigo-200 hover:bg-indigo-500 hover:text-white">
+                            <span class="sr-only">Open main menu</span>
+                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile menu -->
+            <div class="md:hidden" x-show="sidebarOpen" x-cloak @click.away="sidebarOpen = false">
+                <div class="space-y-1 px-2 pb-3 pt-2 sm:px-3">
+                    <a href="/" class="{% if request.url.path == '/' %}bg-indigo-700 text-white{% else %}text-indigo-200 hover:bg-indigo-500 hover:text-white{% endif %} block rounded-md px-3 py-2 text-base font-medium">Dashboard</a>
+                    <a href="/recruiters" class="{% if '/recruiters' in request.url.path %}bg-indigo-700 text-white{% else %}text-indigo-200 hover:bg-indigo-500 hover:text-white{% endif %} block rounded-md px-3 py-2 text-base font-medium">Recruiters</a>
+                    <a href="/templates" class="{% if '/templates' in request.url.path %}bg-indigo-700 text-white{% else %}text-indigo-200 hover:bg-indigo-500 hover:text-white{% endif %} block rounded-md px-3 py-2 text-base font-medium">Templates</a>
+                    <a href="/email/send" class="{% if '/email' in request.url.path %}bg-indigo-700 text-white{% else %}text-indigo-200 hover:bg-indigo-500 hover:text-white{% endif %} block rounded-md px-3 py-2 text-base font-medium">Send Email</a>
+                    <a href="/settings" class="{% if '/settings' in request.url.path %}bg-indigo-700 text-white{% else %}text-indigo-200 hover:bg-indigo-500 hover:text-white{% endif %} block rounded-md px-3 py-2 text-base font-medium">Settings</a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Page Header -->
+        {% block header %}{% endblock %}
+
+        <!-- Main Content -->
+        <main>
+            <div class="mx-auto max-w-7xl py-6 sm:px-6 lg:px-8">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

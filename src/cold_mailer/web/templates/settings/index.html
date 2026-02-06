@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - Cold Mailer{% endblock %}
+
+{% block header %}
+<header class="bg-white shadow">
+    <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <h1 class="text-3xl font-bold tracking-tight text-gray-900">Settings</h1>
+    </div>
+</header>
+{% endblock %}
+
+{% block content %}
+<div class="px-4 sm:px-0 space-y-6">
+    <!-- SMTP Configuration -->
+    <div class="bg-white shadow rounded-lg overflow-hidden">
+        <div class="px-4 py-5 border-b border-gray-200 sm:px-6">
+            <h3 class="text-lg font-medium leading-6 text-gray-900">SMTP Configuration</h3>
+            <p class="mt-1 text-sm text-gray-500">Email server settings for sending emails.</p>
+        </div>
+        <div class="px-4 py-5 sm:p-6">
+            <dl class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Host</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ config.app.smtp.host }}</dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Port</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ config.app.smtp.port }}</dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">TLS Enabled</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ 'Yes' if config.app.smtp.use_tls else 'No' }}</dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Timeout</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ config.app.smtp.timeout }}s</dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Email Account</dt>
+                    <dd class="mt-1 text-sm text-gray-900">
+                        {% if has_credentials %}
+                        {{ config.env.gmail_email }}
+                        <span class="ml-2 inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">Configured</span>
+                        {% else %}
+                        <span class="text-yellow-600">Not configured</span>
+                        {% endif %}
+                    </dd>
+                </div>
+            </dl>
+
+            <!-- Test Connection Button -->
+            <div class="mt-6" id="smtp-test-result">
+                <button
+                    hx-post="/settings/test-smtp"
+                    hx-target="#smtp-test-result"
+                    hx-swap="innerHTML"
+                    hx-indicator="#smtp-spinner"
+                    class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500">
+                    <span class="htmx-indicator spinner mr-2" id="smtp-spinner"></span>
+                    Test SMTP Connection
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rate Limiting -->
+    <div class="bg-white shadow rounded-lg overflow-hidden">
+        <div class="px-4 py-5 border-b border-gray-200 sm:px-6">
+            <h3 class="text-lg font-medium leading-6 text-gray-900">Rate Limiting</h3>
+            <p class="mt-1 text-sm text-gray-500">Email sending limits and delays.</p>
+        </div>
+        <div class="px-4 py-5 sm:p-6">
+            <dl class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Hourly Limit</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ rate_stats.hourly_limit }} emails/hour</dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Daily Limit</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ rate_stats.daily_limit }} emails/day</dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Delay Between Emails</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ rate_stats.delay_between_emails }} seconds</dd>
+                </div>
+            </dl>
+
+            <!-- Current Usage -->
+            <div class="mt-6 space-y-4">
+                <h4 class="text-sm font-medium text-gray-900">Current Usage</h4>
+                <div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Hourly</span>
+                        <span class="font-medium">{{ rate_stats.emails_last_hour }} / {{ rate_stats.hourly_limit }} ({{ rate_stats.hourly_remaining }} remaining)</span>
+                    </div>
+                    <div class="mt-1 w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-indigo-600 h-2 rounded-full" style="width: {{ (rate_stats.emails_last_hour / rate_stats.hourly_limit * 100)|int }}%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Daily</span>
+                        <span class="font-medium">{{ rate_stats.emails_today }} / {{ rate_stats.daily_limit }} ({{ rate_stats.daily_remaining }} remaining)</span>
+                    </div>
+                    <div class="mt-1 w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-indigo-600 h-2 rounded-full" style="width: {{ (rate_stats.emails_today / rate_stats.daily_limit * 100)|int }}%"></div>
+                    </div>
+                </div>
+                <p class="text-sm text-gray-500">Total emails sent (all time): <span class="font-medium">{{ rate_stats.total_sent }}</span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sender Information -->
+    <div class="bg-white shadow rounded-lg overflow-hidden">
+        <div class="px-4 py-5 border-b border-gray-200 sm:px-6">
+            <h3 class="text-lg font-medium leading-6 text-gray-900">Sender Information</h3>
+            <p class="mt-1 text-sm text-gray-500">Your sender details used in emails.</p>
+        </div>
+        <div class="px-4 py-5 sm:p-6">
+            <dl class="grid grid-cols-1 gap-4">
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Name</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ config.app.sender.name }}</dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Signature</dt>
+                    <dd class="mt-1 text-sm text-gray-900 whitespace-pre-wrap">{{ config.app.sender.signature }}</dd>
+                </div>
+            </dl>
+        </div>
+    </div>
+
+    <!-- Sent History -->
+    <div class="bg-white shadow rounded-lg overflow-hidden">
+        <div class="px-4 py-5 border-b border-gray-200 sm:px-6 flex justify-between items-center">
+            <div>
+                <h3 class="text-lg font-medium leading-6 text-gray-900">Sent History</h3>
+                <p class="mt-1 text-sm text-gray-500">Recent emails sent through the system.</p>
+            </div>
+            <div id="clear-history-result">
+                <button
+                    hx-post="/settings/clear-history"
+                    hx-target="#clear-history-result"
+                    hx-swap="innerHTML"
+                    hx-confirm="Are you sure you want to clear all sent history? This cannot be undone."
+                    class="text-sm text-red-600 hover:text-red-800">
+                    Clear History
+                </button>
+            </div>
+        </div>
+        <div class="px-4 py-5 sm:p-6">
+            {% if sent_history %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead>
+                        <tr>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Template</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        {% for entry in sent_history %}
+                        <tr>
+                            <td class="px-3 py-3 text-sm text-gray-500 whitespace-nowrap">{{ entry.timestamp[:16].replace('T', ' ') }}</td>
+                            <td class="px-3 py-3 text-sm text-gray-900">{{ entry.email }}</td>
+                            <td class="px-3 py-3 text-sm text-gray-500">{{ entry.template }}</td>
+                            <td class="px-3 py-3 text-sm text-gray-500 truncate max-w-xs">{{ entry.subject }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-sm text-gray-500">No emails sent yet.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Configuration Files -->
+    <div class="bg-white shadow rounded-lg overflow-hidden">
+        <div class="px-4 py-5 border-b border-gray-200 sm:px-6">
+            <h3 class="text-lg font-medium leading-6 text-gray-900">Configuration Files</h3>
+            <p class="mt-1 text-sm text-gray-500">Edit these files to change settings.</p>
+        </div>
+        <div class="px-4 py-5 sm:p-6">
+            <dl class="space-y-4">
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Main Config</dt>
+                    <dd class="mt-1 text-sm text-gray-900 font-mono">config/config.yaml</dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Environment Variables</dt>
+                    <dd class="mt-1 text-sm text-gray-900 font-mono">.env</dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Data Format</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ config.app.data_format }}</dd>
+                </div>
+            </dl>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,21 @@
+Subject: {{ custom.referral or "Referral" }} Recommended I Reach Out - {{ job.title or "Software Engineer" }} at {{ recruiter.company }}
+
+{{ greeting }}
+
+{% if custom.referral %}
+{{ custom.referral }} suggested I reach out to you regarding the {{ job.title or "Software Engineer" }} position at {{ recruiter.company }}.
+{% else %}
+I was referred to you regarding the {{ job.title or "Software Engineer" }} position at {{ recruiter.company }}.
+{% endif %}
+
+{% if custom.connection %}
+{{ custom.connection }}
+{% endif %}
+
+I am excited about the opportunity to bring my skills and experience to your team. {{ recruiter.company }}'s work in {{ recruiter.department or "technology" }} aligns perfectly with my professional interests and career goals.
+
+I have attached my resume for your review. I would greatly appreciate the opportunity to discuss how I can contribute to your team.
+
+Thank you for your time and consideration.
+
+{{ sender.signature }}

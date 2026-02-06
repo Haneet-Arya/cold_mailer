@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}Sending Emails - Cold Mailer{% endblock %}
+
+{% block header %}
+<header class="bg-white shadow">
+    <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <h1 class="text-3xl font-bold tracking-tight text-gray-900">
+            {% if dry_run %}Dry Run in Progress{% else %}Sending Emails{% endif %}
+        </h1>
+    </div>
+</header>
+{% endblock %}
+
+{% block content %}
+<div class="px-4 sm:px-0">
+    <div class="max-w-2xl mx-auto" x-data="bulkProgress('{{ session_id }}', {{ total }})" x-init="startPolling()">
+        <!-- Progress Card -->
+        <div class="bg-white shadow rounded-lg p-6">
+            {% if dry_run %}
+            <div class="mb-4 rounded-md bg-yellow-50 p-3">
+                <p class="text-sm text-yellow-800"><strong>Dry Run Mode:</strong> No actual emails will be sent.</p>
+            </div>
+            {% endif %}
+
+            <!-- Progress Bar -->
+            <div class="mb-6">
+                <div class="flex justify-between text-sm text-gray-600 mb-2">
+                    <span>Progress</span>
+                    <span x-text="`${current} / ${total}`">0 / {{ total }}</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-4">
+                    <div class="bg-indigo-600 h-4 rounded-full transition-all duration-300"
+                         x-bind:style="`width: ${(current / total) * 100}%`"></div>
+                </div>
+            </div>
+
+            <!-- Current Status -->
+            <div class="mb-6 text-center">
+                <p class="text-sm text-gray-500" x-show="status === 'in_progress'">
+                    Sending to: <span class="font-medium text-gray-900" x-text="currentEmail"></span>
+                </p>
+                <p class="text-sm text-green-600 font-medium" x-show="status === 'completed'">
+                    Completed!
+                </p>
+                <p class="text-sm text-red-600 font-medium" x-show="status === 'error'">
+                    An error occurred
+                </p>
+            </div>
+
+            <!-- Stats -->
+            <div class="grid grid-cols-3 gap-4 mb-6">
+                <div class="text-center p-3 bg-green-50 rounded-lg">
+                    <p class="text-2xl font-bold text-green-600" x-text="sent">0</p>
+                    <p class="text-xs text-green-700">Sent</p>
+                </div>
+                <div class="text-center p-3 bg-red-50 rounded-lg">
+                    <p class="text-2xl font-bold text-red-600" x-text="failed">0</p>
+                    <p class="text-xs text-red-700">Failed</p>
+                </div>
+                <div class="text-center p-3 bg-yellow-50 rounded-lg">
+                    <p class="text-2xl font-bold text-yellow-600" x-text="skipped">0</p>
+                    <p class="text-xs text-yellow-700">Skipped</p>
+                </div>
+            </div>
+
+            <!-- Errors List -->
+            <div x-show="errors.length > 0" class="mb-6">
+                <h3 class="text-sm font-medium text-gray-900 mb-2">Errors</h3>
+                <div class="max-h-40 overflow-y-auto bg-red-50 rounded-lg p-3">
+                    <ul class="space-y-1 text-sm text-red-700">
+                        <template x-for="error in errors" :key="error.email">
+                            <li>
+                                <span class="font-medium" x-text="error.email"></span>:
+                                <span x-text="error.error"></span>
+                            </li>
+                        </template>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Spinner -->
+            <div x-show="status === 'in_progress' || status === 'pending'" class="flex justify-center">
+                <div class="spinner" style="width: 24px; height: 24px;"></div>
+            </div>
+
+            <!-- Action Buttons (show when complete) -->
+            <div x-show="status === 'completed' || status === 'error'" class="flex gap-4 justify-center mt-4">
+                <a href="/email/bulk" class="rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+                    Send More
+                </a>
+                <a href="/" class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500">
+                    Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function bulkProgress(sessionId, total) {
+    return {
+        sessionId: sessionId,
+        total: total,
+        current: 0,
+        currentEmail: '',
+        status: 'pending',
+        sent: 0,
+        failed: 0,
+        skipped: 0,
+        errors: [],
+        eventSource: null,
+
+        startPolling() {
+            // Use SSE for real-time updates
+            this.eventSource = new EventSource(`/email/bulk/progress/${this.sessionId}`);
+
+            this.eventSource.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+
+                if (data.error) {
+                    this.status = 'error';
+                    this.eventSource.close();
+                    return;
+                }
+
+                this.current = data.current;
+                this.currentEmail = data.current_email;
+                this.status = data.status;
+                this.sent = data.sent;
+                this.failed = data.failed;
+                this.skipped = data.skipped;
+                this.errors = data.errors;
+
+                if (data.status === 'completed' || data.status === 'error') {
+                    this.eventSource.close();
+                }
+            };
+
+            this.eventSource.onerror = () => {
+                // Fallback to polling if SSE fails
+                this.eventSource.close();
+                this.pollStatus();
+            };
+        },
+
+        async pollStatus() {
+            while (this.status !== 'completed' && this.status !== 'error') {
+                try {
+                    const response = await fetch(`/email/bulk/status/${this.sessionId}`);
+                    if (!response.ok) break;
+
+                    // Parse the response and extract data
+                    // (This is a fallback, SSE is preferred)
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                } catch (e) {
+                    break;
+                }
+            }
+        }
+    };
+}
+</script>
+{% endblock %}

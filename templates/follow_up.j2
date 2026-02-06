@@ -1,0 +1,17 @@
+Subject: Following Up - {{ job.title or "Software Engineer" }} Application at {{ recruiter.company }}
+
+{{ greeting }}
+
+I wanted to follow up on my previous application for the {{ job.title or "Software Engineer" }} position at {{ recruiter.company }}.
+
+I remain very interested in the opportunity and would love to learn more about the role and how I might contribute to your team.
+
+{% if custom.previous_contact %}
+Since we last spoke{{ custom.previous_contact }}, I have continued to develop my skills and remain enthusiastic about the possibility of joining {{ recruiter.company }}.
+{% endif %}
+
+Please let me know if you need any additional information from me. I am happy to provide references or schedule a call at your convenience.
+
+Thank you again for considering my application.
+
+{{ sender.signature }}

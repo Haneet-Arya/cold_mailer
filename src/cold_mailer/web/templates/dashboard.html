@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Cold Mailer{% endblock %}
+
+{% block header %}
+<header class="bg-white shadow">
+    <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <h1 class="text-3xl font-bold tracking-tight text-gray-900">Dashboard</h1>
+    </div>
+</header>
+{% endblock %}
+
+{% block content %}
+<div class="px-4 sm:px-0">
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <!-- Total Recruiters -->
+        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6">
+            <dt class="truncate text-sm font-medium text-gray-500">Total Recruiters</dt>
+            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900">{{ recruiter_stats.total }}</dd>
+        </div>
+
+        <!-- Pending -->
+        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6">
+            <dt class="truncate text-sm font-medium text-gray-500">Pending</dt>
+            <dd class="mt-1 text-3xl font-semibold tracking-tight text-yellow-600">{{ recruiter_stats.pending }}</dd>
+        </div>
+
+        <!-- Sent -->
+        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6">
+            <dt class="truncate text-sm font-medium text-gray-500">Sent</dt>
+            <dd class="mt-1 text-3xl font-semibold tracking-tight text-blue-600">{{ recruiter_stats.sent }}</dd>
+        </div>
+
+        <!-- Replied -->
+        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6">
+            <dt class="truncate text-sm font-medium text-gray-500">Replied</dt>
+            <dd class="mt-1 text-3xl font-semibold tracking-tight text-green-600">{{ recruiter_stats.replied }}</dd>
+        </div>
+    </div>
+
+    <!-- Rate Limiting & Quick Actions -->
+    <div class="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
+        <!-- Rate Limiting Status -->
+        <div class="overflow-hidden rounded-lg bg-white shadow">
+            <div class="px-4 py-5 sm:p-6">
+                <h3 class="text-lg font-medium leading-6 text-gray-900">Rate Limiting</h3>
+                <div class="mt-5 space-y-4">
+                    <div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-500">Hourly Usage</span>
+                            <span class="font-medium">{{ rate_stats.emails_last_hour }} / {{ rate_stats.hourly_limit }}</span>
+                        </div>
+                        <div class="mt-1 w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-indigo-600 h-2 rounded-full" style="width: {{ (rate_stats.emails_last_hour / rate_stats.hourly_limit * 100)|int }}%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-500">Daily Usage</span>
+                            <span class="font-medium">{{ rate_stats.emails_today }} / {{ rate_stats.daily_limit }}</span>
+                        </div>
+                        <div class="mt-1 w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-indigo-600 h-2 rounded-full" style="width: {{ (rate_stats.emails_today / rate_stats.daily_limit * 100)|int }}%"></div>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-500">
+                        Delay between emails: {{ rate_stats.delay_between_emails }}s
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="overflow-hidden rounded-lg bg-white shadow">
+            <div class="px-4 py-5 sm:p-6">
+                <h3 class="text-lg font-medium leading-6 text-gray-900">Quick Actions</h3>
+                <div class="mt-5 space-y-3">
+                    <a href="/recruiters/add" class="block w-full rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500">
+                        Add New Recruiter
+                    </a>
+                    <a href="/email/send" class="block w-full rounded-md bg-white px-3 py-2 text-center text-sm font-semibold text-indigo-600 shadow-sm ring-1 ring-inset ring-indigo-300 hover:bg-indigo-50">
+                        Send Single Email
+                    </a>
+                    <a href="/email/bulk" class="block w-full rounded-md bg-white px-3 py-2 text-center text-sm font-semibold text-indigo-600 shadow-sm ring-1 ring-inset ring-indigo-300 hover:bg-indigo-50">
+                        Bulk Send to Pending ({{ recruiter_stats.pending }})
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="mt-8">
+        <div class="overflow-hidden rounded-lg bg-white shadow">
+            <div class="px-4 py-5 sm:p-6">
+                <h3 class="text-lg font-medium leading-6 text-gray-900">Recent Sent Emails</h3>
+                {% if recent_sent %}
+                <div class="mt-5 overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead>
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Template</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            {% for entry in recent_sent %}
+                            <tr>
+                                <td class="px-4 py-3 text-sm text-gray-500 whitespace-nowrap">{{ entry.timestamp[:16].replace('T', ' ') }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-900">{{ entry.email }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-500">{{ entry.template }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-500 truncate max-w-xs">{{ entry.subject }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="mt-5 text-sm text-gray-500">No emails sent yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
