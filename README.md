@@ -34,8 +34,8 @@ cold-mailer init
 cp .env.example .env
 # Edit .env with your Gmail email and app password
 
-# 3. Edit sender information
-# Edit config/config.yaml with your name and signature
+# 3. Configure config/config.yaml and set sender name/signature
+cp config/config.example.yaml config/config.yaml
 
 # 4. Test SMTP connection
 cold-mailer config test-smtp
