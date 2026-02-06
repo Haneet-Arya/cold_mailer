@@ -71,4 +71,6 @@ Thumbs.db
 !data/.gitkeep
 !logs/.gitkeep
 !attachments/.gitkeep
-!templates/*.j2
+
+# skipping any custom templates that may contain personal info
+templates/*.j2
