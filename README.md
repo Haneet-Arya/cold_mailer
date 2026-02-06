@@ -1,9 +1,11 @@
-# Cold Mailer CLI
+# Cold Mailer
 
-A Python CLI application for sending personalized cold emails to recruiters with template support, CSV/JSON-based recruiter management, and Gmail SMTP integration.
+A Python application for sending personalized cold emails to recruiters with template support, CSV/JSON-based recruiter management, and Gmail SMTP integration. Available as both a **CLI** and a **Web UI**.
 
 ## Features
 
+- **Web UI**: Modern browser-based interface with real-time progress tracking
+- **CLI**: Full-featured command-line interface for scripting and automation
 - **Template Personalization**: Jinja2 templates with recruiter name, company, job title, and custom fields
 - **Dual Data Format**: Store recruiters in CSV (spreadsheet-friendly) or JSON (nested custom fields)
 - **Rate Limiting**: Prevents Gmail spam detection (configurable hourly/daily limits with delays)
@@ -49,6 +51,34 @@ cold-mailer send to -r recruiter@company.com --dry-run
 # 7. Send to all pending recruiters
 cold-mailer send all
 ```
+
+## Web UI
+
+Start the web server for a browser-based interface:
+
+```bash
+# Start the web server
+cold-mailer serve
+
+# With custom host and port
+cold-mailer serve --host 0.0.0.0 --port 8080
+
+# Enable auto-reload for development
+cold-mailer serve --reload
+```
+
+Then open http://127.0.0.1:8000 in your browser.
+
+### Web UI Features
+
+- **Dashboard**: Overview with stats, rate limit status, and recent activity
+- **Recruiters**: Add, edit, delete, and filter recruiters by status
+- **Templates**: Browse and preview email templates with sample data
+- **Send Email**: Send to individual recruiters with dry-run preview
+- **Bulk Send**: Send to all pending recruiters with real-time progress bar
+- **Settings**: Test SMTP connection, view rate limits, and sent history
+
+The web UI uses the same data files and configuration as the CLI, so you can use both interchangeably.
 
 ## Gmail Setup
 
@@ -126,6 +156,19 @@ cold-mailer convert --to json
 ```bash
 # View statistics and rate limit status
 cold-mailer status
+```
+
+### Web Server
+
+```bash
+# Start web UI on default port (8000)
+cold-mailer serve
+
+# Custom host and port
+cold-mailer serve --host 0.0.0.0 --port 8080
+
+# Development mode with auto-reload
+cold-mailer serve --reload
 ```
 
 ## Data Formats
@@ -208,13 +251,18 @@ email:
 ```
 cold_mailer/
 ├── src/cold_mailer/        # Source code
+│   ├── cli.py              # CLI commands
+│   ├── mailer.py           # Email sending logic
+│   ├── recruiter_manager.py # Recruiter CRUD
+│   ├── template_engine.py  # Jinja2 rendering
+│   ├── rate_limiter.py     # Rate limiting
+│   └── web/                # Web UI module
+│       ├── app.py          # FastAPI application
+│       ├── routes/         # API routes
+│       └── templates/      # HTML templates
 ├── templates/              # Jinja2 email templates
 ├── data/                   # Recruiter data & sent log
 ├── config/                 # config.yaml
 ├── attachments/            # Resume storage
 └── logs/                   # Application logs
 ```
-
-## License
-
-MIT
